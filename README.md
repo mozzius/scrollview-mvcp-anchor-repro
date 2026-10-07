@@ -20,7 +20,7 @@ transaction, reproduces on 0.87.1 but is already fixed on `main` by #57294. It
 is covered in [Background: the unmounted anchor on 0.87.1](#background-the-unmounted-anchor-on-0871),
 and not drafted as an issue.
 
-- **Upstream issues:** clipped anchor: [react/react-native#58910](https://github.com/react/react-native/issues/58910). Spacer anchor: not filed yet.
+- **Upstream issues:** clipped anchor: [react/react-native#58910](https://github.com/react/react-native/issues/58910). Spacer anchor: [react/react-native#58913](https://github.com/react/react-native/issues/58913).
 - **Found in:** the Bluesky app, restoring a feed position and prepending newer
   posts above the reader.
 
