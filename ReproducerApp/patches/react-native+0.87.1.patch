@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
-index 548987f..f098b65 100644
+index 548987f..a6171e1 100644
 --- a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
 +++ b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
 @@ -34,6 +34,42 @@
@@ -65,7 +65,7 @@ index 548987f..f098b65 100644
    }
  
    return self;
-@@ -1065,21 +1107,62 @@ - (void)_prepareForMaintainVisibleScrollPosition
+@@ -1065,21 +1107,64 @@ - (void)_prepareForMaintainVisibleScrollPosition
      return;
    }
  
@@ -103,7 +103,9 @@ index 548987f..f098b65 100644
 +        // that one starts inside the viewport.
 +        UIView *next = _contentView.subviews[ii + 1];
 +        CGFloat nextStart = horizontal ? CGRectGetMinX(next.frame) : CGRectGetMinY(next.frame);
-+        if (nextStart >= offset && nextStart < offset + visibleLength) {
++        // Half a point of slack: after a correction the next view's origin and the offset can differ
++        // by a rounding error in either direction.
++        if (nextStart > offset - 0.5 && nextStart < offset + visibleLength) {
 +          _fallbackVisibleView = next;
 +          _fallbackVisibleViewTag = next.tag;
 +          _prevFallbackVisibleFrame = next.frame;
@@ -132,7 +134,7 @@ index 548987f..f098b65 100644
        break;
      }
    }
-@@ -1092,18 +1175,79 @@ - (void)_adjustForMaintainVisibleContentPosition
+@@ -1092,18 +1177,82 @@ - (void)_adjustForMaintainVisibleContentPosition
      return;
    }
  
@@ -145,13 +147,16 @@ index 548987f..f098b65 100644
 +  NSInteger firstVisibleViewTag = _firstVisibleViewTag;
 +  CGRect prevFirstVisibleFrame = _prevFirstVisibleFrame;
 +  UIView *fallbackVisibleView = _fallbackVisibleView;
-+  if (fallbackVisibleView != nil && fallbackVisibleView.tag == _fallbackVisibleViewTag && firstVisibleView != nil &&
-+      !CGSizeEqualToSize(firstVisibleView.frame.size, prevFirstVisibleFrame.size)) {
-+    // Anchor mode 2: the anchor straddled the leading edge and changed size, so its origin cannot
-+    // say how far the content after it moved. Measure the view after it instead.
++  if (fallbackVisibleView != nil && fallbackVisibleView.tag == _fallbackVisibleViewTag &&
++      (firstVisibleView == nil || firstVisibleView.tag != firstVisibleViewTag ||
++       !CGSizeEqualToSize(firstVisibleView.frame.size, prevFirstVisibleFrame.size))) {
++    // Anchor mode 2: the anchor straddled the leading edge and is gone, was recycled, or changed
++    // size, so its origin cannot say how far the content after it moved. Measure the view after it.
 +    NSLog(
-+        @"[mvcp] adjust: straddling anchor tag=%ld changed size (h %.1f -> %.1f), measuring fallback tag=%ld instead",
++        @"[mvcp] adjust: straddling anchor %@ tag=%ld/%ld h %.1f -> %.1f, measuring fallback tag=%ld instead",
++        firstVisibleView == nil ? @"nil" : @"alive",
 +        (long)firstVisibleView.tag,
++        (long)firstVisibleViewTag,
 +        prevFirstVisibleFrame.size.height,
 +        firstVisibleView.frame.size.height,
 +        (long)fallbackVisibleView.tag);
@@ -216,7 +221,7 @@ index 548987f..f098b65 100644
      if (ABS(deltaX) > 0.5) {
        CGFloat x = _scrollView.contentOffset.x;
        [self _forceDispatchNextScrollEvent];
-@@ -1116,12 +1260,13 @@ - (void)_adjustForMaintainVisibleContentPosition
+@@ -1116,12 +1265,13 @@ - (void)_adjustForMaintainVisibleContentPosition
        }
      }
    } else {
