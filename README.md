@@ -22,7 +22,6 @@ and not drafted as an issue.
 
 - **Found in:** the Bluesky app, restoring a feed position and prepending newer
   posts above the reader.
-  <!-- TODO(samuel): link the social-app PR that carries these fixes as a patch, as the spacer-ring repro does. -->
 
 ## Environment
 
