@@ -1,0 +1,234 @@
+diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
+index 548987f..f098b65 100644
+--- a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
++++ b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
+@@ -34,6 +34,42 @@
+ 
+ static const CGFloat kClippingLeeway = 44.0;
+ 
++/*
++ * scrollview-mvcp-anchor-repro: runtime switches, so stock and fixed behaviour can be compared in
++ * one build. The JS app writes them to NSUserDefaults with `Settings.set()`. With both at 0 this
++ * file behaves exactly like stock 0.87.1, apart from the [mvcp] log lines.
++ *
++ * MVCPReproAnchorMode: 0 = stock 0.87.1 / main (first partially visible view)
++ *                      1 = prototype (first view whose origin is at or below the offset)
++ *                      2 = proposed (stock anchor, but if it straddles the leading edge and
++ *                          changes size, measure the first view that starts inside the viewport)
++ * MVCPReproGuardMode:  0 = stock 0.87.1 (tag check only behind enableViewCulling)
++ *                      1 = main, i.e. #57294 (nil, tag and superview checks)
++ *                      2 = proposed (main without the superview check)
++ */
++static NSInteger MVCPReproAnchorMode(void)
++{
++  return [[NSUserDefaults standardUserDefaults] integerForKey:@"MVCPReproAnchorMode"];
++}
++
++static NSInteger MVCPReproGuardMode(void)
++{
++  return [[NSUserDefaults standardUserDefaults] integerForKey:@"MVCPReproGuardMode"];
++}
++
++/*
++ * Lets the JS app show whether this patch was compiled in (it is not when React Native core comes
++ * from the prebuilt XCFrameworks): the app writes a random MVCPReproPing, and this echoes it back.
++ */
++static void MVCPReproEcho(void)
++{
++  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
++  NSString *ping = [defaults stringForKey:@"MVCPReproPing"];
++  if (ping != nil && ![ping isEqualToString:[defaults stringForKey:@"MVCPReproPong"]]) {
++    [defaults setObject:ping forKey:@"MVCPReproPong"];
++  }
++}
++
+ static UIScrollViewKeyboardDismissMode RCTUIKeyboardDismissModeFromProps(const ScrollViewProps &props)
+ {
+   switch (props.keyboardDismissMode) {
+@@ -112,6 +148,11 @@ @implementation RCTScrollViewComponentView {
+   CGRect _prevFirstVisibleFrame;
+   __weak UIView *_firstVisibleView;
+   NSInteger _firstVisibleViewTag;
++  // scrollview-mvcp-anchor-repro, anchor mode 2: the first view that starts inside the viewport,
++  // recorded only when _firstVisibleView straddles the leading edge.
++  __weak UIView *_fallbackVisibleView;
++  NSInteger _fallbackVisibleViewTag;
++  CGRect _prevFallbackVisibleFrame;
+ 
+   CGFloat _endDraggingSensitivityMultiplier;
+ 
+@@ -160,6 +201,7 @@ - (instancetype)initWithFrame:(CGRect)frame
+ 
+     _scrollEventThrottle = 0;
+     _endDraggingSensitivityMultiplier = 1;
++
+   }
+ 
+   return self;
+@@ -1065,21 +1107,62 @@ - (void)_prepareForMaintainVisibleScrollPosition
+     return;
+   }
+ 
++  MVCPReproEcho();
++  NSInteger anchorMode = MVCPReproAnchorMode();
+   BOOL horizontal = _scrollView.contentSize.width > self.frame.size.width;
+   int minIdx = props.maintainVisibleContentPosition.value().minIndexForVisible;
++  _fallbackVisibleView = nil;
++  _fallbackVisibleViewTag = 0;
++  _prevFallbackVisibleFrame = CGRectZero;
++  CGFloat offset = horizontal ? _scrollView.contentOffset.x : _scrollView.contentOffset.y;
++  CGFloat visibleLength = horizontal ? _scrollView.bounds.size.width : _scrollView.bounds.size.height;
+   for (NSUInteger ii = minIdx; ii < _contentView.subviews.count; ++ii) {
+-    // Find the first view that is partially or fully visible.
+     UIView *subview = _contentView.subviews[ii];
++    CGFloat start = horizontal ? CGRectGetMinX(subview.frame) : CGRectGetMinY(subview.frame);
++    CGFloat end = horizontal ? CGRectGetMaxX(subview.frame) : CGRectGetMaxY(subview.frame);
+     BOOL hasNewView = NO;
+-    if (horizontal) {
+-      hasNewView = subview.frame.origin.x + subview.frame.size.width > _scrollView.contentOffset.x;
++    if (anchorMode == 1) {
++      // Prototype: the first view whose origin is at or below the offset.
++      hasNewView = start >= offset;
+     } else {
+-      hasNewView = subview.frame.origin.y + subview.frame.size.height > _scrollView.contentOffset.y;
++      // Stock: find the first view that is partially or fully visible.
++      hasNewView = end > offset;
+     }
+     if (hasNewView || ii == _contentView.subviews.count - 1) {
+       _prevFirstVisibleFrame = subview.frame;
+       _firstVisibleView = subview;
+       _firstVisibleViewTag = subview.tag;
++      if (anchorMode == 2 && start < offset && ii + 1 < _contentView.subviews.count) {
++        // Proposed: the anchor straddles the leading edge, so also remember the view after it if
++        // that one starts inside the viewport.
++        UIView *next = _contentView.subviews[ii + 1];
++        CGFloat nextStart = horizontal ? CGRectGetMinX(next.frame) : CGRectGetMinY(next.frame);
++        if (nextStart >= offset && nextStart < offset + visibleLength) {
++          _fallbackVisibleView = next;
++          _fallbackVisibleViewTag = next.tag;
++          _prevFallbackVisibleFrame = next.frame;
++        }
++      }
++      NSLog(
++          @"[mvcp] prepare anchorMode=%ld offset=%.1f contentH=%.1f anchor=subviews[%lu/%lu] tag=%ld y=%.1f h=%.1f%@%@",
++          (long)anchorMode,
++          _scrollView.contentOffset.y,
++          _scrollView.contentSize.height,
++          (unsigned long)ii,
++          (unsigned long)_contentView.subviews.count,
++          (long)subview.tag,
++          subview.frame.origin.y,
++          subview.frame.size.height,
++          subview.frame.origin.y < _scrollView.contentOffset.y
++              ? [NSString stringWithFormat:@" (straddles the top edge: bottom - offset = %g)",
++                                           CGRectGetMaxY(subview.frame) - _scrollView.contentOffset.y]
++              : @"",
++          _fallbackVisibleView != nil
++              ? [NSString stringWithFormat:@" fallback=subviews[%lu] tag=%ld y=%.1f",
++                                           (unsigned long)(ii + 1),
++                                           (long)_fallbackVisibleViewTag,
++                                           _prevFallbackVisibleFrame.origin.y]
++              : @"");
+       break;
+     }
+   }
+@@ -1092,18 +1175,79 @@ - (void)_adjustForMaintainVisibleContentPosition
+     return;
+   }
+ 
+-  if (ReactNativeFeatureFlags::enableViewCulling()) {
+-    // Abort if the first visible view has changed (different tag)
+-    if (_firstVisibleView && _firstVisibleView.tag != _firstVisibleViewTag) {
++  NSInteger guardMode = MVCPReproGuardMode();
++  // Strong for the rest of the method, so the frame used below is the frame that was checked.
++  UIView *firstVisibleView = _firstVisibleView;
++  NSInteger firstVisibleViewTag = _firstVisibleViewTag;
++  CGRect prevFirstVisibleFrame = _prevFirstVisibleFrame;
++  UIView *fallbackVisibleView = _fallbackVisibleView;
++  if (fallbackVisibleView != nil && fallbackVisibleView.tag == _fallbackVisibleViewTag && firstVisibleView != nil &&
++      !CGSizeEqualToSize(firstVisibleView.frame.size, prevFirstVisibleFrame.size)) {
++    // Anchor mode 2: the anchor straddled the leading edge and changed size, so its origin cannot
++    // say how far the content after it moved. Measure the view after it instead.
++    NSLog(
++        @"[mvcp] adjust: straddling anchor tag=%ld changed size (h %.1f -> %.1f), measuring fallback tag=%ld instead",
++        (long)firstVisibleView.tag,
++        prevFirstVisibleFrame.size.height,
++        firstVisibleView.frame.size.height,
++        (long)fallbackVisibleView.tag);
++    firstVisibleView = fallbackVisibleView;
++    firstVisibleViewTag = _fallbackVisibleViewTag;
++    prevFirstVisibleFrame = _prevFallbackVisibleFrame;
++  }
++  NSLog(
++      @"[mvcp] adjust guardMode=%ld offset=%.1f contentH=%.1f anchor=%@ tag=%ld/%ld attached=%@ prevY=%.1f newY=%.1f",
++      (long)guardMode,
++      _scrollView.contentOffset.y,
++      _scrollView.contentSize.height,
++      firstVisibleView == nil ? @"nil" : @"alive",
++      (long)firstVisibleView.tag,
++      (long)firstVisibleViewTag,
++      firstVisibleView.superview == _contentView ? @"YES" : @"NO",
++      prevFirstVisibleFrame.origin.y,
++      firstVisibleView.frame.origin.y);
++
++  if (guardMode == 1) {
++    // main (#57294)
++    if (!firstVisibleView) {
++      NSLog(@"[mvcp] adjust bail: no anchor (main)");
++      return;
++    }
++    if (firstVisibleView.tag != firstVisibleViewTag) {
++      NSLog(@"[mvcp] adjust bail: tag changed (main)");
++      return;
++    }
++    if (firstVisibleView.superview != _contentView) {
++      NSLog(@"[mvcp] adjust bail: anchor not a subview of the content view (main)");
+       return;
+     }
++  } else if (guardMode == 2) {
++    // Proposed: main's nil and tag checks, without its superview check. A view that
++    // _remountChildren clipped off (removeClippedSubviews) is detached but still retained, and has
++    // already been given this transaction's frame, so it can still be measured.
++    if (!firstVisibleView) {
++      NSLog(@"[mvcp] adjust bail: no anchor (proposed)");
++      return;
++    }
++    if (firstVisibleView.tag != firstVisibleViewTag) {
++      NSLog(@"[mvcp] adjust bail: tag changed (proposed)");
++      return;
++    }
++  } else {
++    // Stock 0.87.1
++    if (ReactNativeFeatureFlags::enableViewCulling()) {
++      // Abort if the first visible view has changed (different tag)
++      if (firstVisibleView && firstVisibleView.tag != firstVisibleViewTag) {
++        return;
++      }
++    }
+   }
+ 
+   std::optional<int> autoscrollThreshold = props.maintainVisibleContentPosition.value().autoscrollToTopThreshold;
+   BOOL horizontal = _scrollView.contentSize.width > self.frame.size.width;
+   // TODO: detect and handle/ignore re-ordering
+   if (horizontal) {
+-    CGFloat deltaX = _firstVisibleView.frame.origin.x - _prevFirstVisibleFrame.origin.x;
++    CGFloat deltaX = firstVisibleView.frame.origin.x - prevFirstVisibleFrame.origin.x;
+     if (ABS(deltaX) > 0.5) {
+       CGFloat x = _scrollView.contentOffset.x;
+       [self _forceDispatchNextScrollEvent];
+@@ -1116,12 +1260,13 @@ - (void)_adjustForMaintainVisibleContentPosition
+       }
+     }
+   } else {
+-    CGRect newFrame = _firstVisibleView.frame;
+-    CGFloat deltaY = newFrame.origin.y - _prevFirstVisibleFrame.origin.y;
++    CGRect newFrame = firstVisibleView.frame;
++    CGFloat deltaY = newFrame.origin.y - prevFirstVisibleFrame.origin.y;
+     if (ABS(deltaY) > 0.5) {
+       CGFloat y = _scrollView.contentOffset.y;
+       [self _forceDispatchNextScrollEvent];
+       _scrollView.contentOffset = CGPointMake(_scrollView.contentOffset.x, _scrollView.contentOffset.y + deltaY);
++      NSLog(@"[mvcp] adjust corrected deltaY=%+.1f offset %.1f -> %.1f", deltaY, y, _scrollView.contentOffset.y);
+       if (autoscrollThreshold) {
+         // If the offset WAS within the threshold of the start, animate to the start.
+         if (y <= autoscrollThreshold.value()) {
