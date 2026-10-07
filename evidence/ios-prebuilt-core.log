@@ -1,0 +1,32 @@
+# The same patched app, but pod install run without RCT_USE_PREBUILT_RNCORE=0, so React Native core comes from the prebuilt XCFrameworks. The readout says the patch is not active, there are no [mvcp] lines, and stock and "fix" behave identically.
+#
+# Captured with `xcrun simctl spawn <udid> log stream --predicate 'eventMessage CONTAINS "[mvcp]" OR eventMessage CONTAINS "[repro]"'`.
+# [mvcp] lines come from the patched RCTScrollViewComponentView.mm, [repro] lines from App.tsx (JS console).
+# iPhone 17 Pro simulator, iOS 26.5, React Native 0.87.1 (prebuilt core), New Architecture, Hermes.
+
+14:48:27.810 [repro] contentSize h=3692.0 vl=[0,9]
+14:48:27.926 [repro] contentSize h=6784.0 vl=[0,19]
+14:48:37.348 [repro] run A: anchor stock · guard 0.87.1, header on
+14:48:37.368 [repro] contentSize h=3692.0 vl=[0,9]
+14:48:37.445 [repro] contentSize h=6488.0 vl=[0,17]
+14:48:39.866 [repro] landmark row 0 at screen y=416.3
+14:48:39.866 [repro] prepending 20 rows of 60pt at y=0.0 h=0.0
+14:48:39.901 [repro] contentSize h=10550.7 vl=[20,36]
+14:48:39.912 [repro] scroll y=4137.7 (dy=+4137.7) h=10550.7 (dh=+0.0) vl=[20,36]
+14:48:39.916 [repro] contentSize h=9501.7 vl=[20,36]
+14:48:39.939 [repro] contentSize h=8565.0 vl=[0,40]
+14:48:39.939 [repro] scroll y=2249.0 (dy=-1888.7) h=8565.0 (dh=-1985.7) vl=[0,40]
+14:48:39.989 [repro] contentSize h=8788.0 vl=[0,41]
+14:48:42.883 [repro] verdict: row 0 at screen y=-632.7, moved -1049.0
+14:48:45.612 [repro] run A: anchor fix · guard main, header on
+14:48:45.644 [repro] contentSize h=3692.0 vl=[0,9]
+14:48:45.712 [repro] contentSize h=6488.0 vl=[0,17]
+14:48:48.115 [repro] landmark row 0 at screen y=416.3
+14:48:48.115 [repro] prepending 20 rows of 60pt at y=0.0 h=0.0
+14:48:48.136 [repro] contentSize h=10550.7 vl=[20,36]
+14:48:48.141 [repro] scroll y=4137.7 (dy=+4137.7) h=10550.7 (dh=+0.0) vl=[20,36]
+14:48:48.144 [repro] contentSize h=9501.7 vl=[20,36]
+14:48:48.158 [repro] contentSize h=8565.0 vl=[0,40]
+14:48:48.159 [repro] scroll y=2249.0 (dy=-1888.7) h=8565.0 (dh=-1985.7) vl=[0,40]
+14:48:48.203 [repro] contentSize h=8788.0 vl=[0,41]
+14:48:51.132 [repro] verdict: row 0 at screen y=-632.7, moved -1049.0

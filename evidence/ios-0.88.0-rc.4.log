@@ -1,0 +1,52 @@
+# Unmodified React Native 0.88.0-rc.4 (prebuilt core, no patch), same App.tsx. No [mvcp] lines, because nothing is patched; the mode buttons do nothing. Screens A and B. The last two runs are the take in evidence/ios-clipped-anchor-0.88.0-rc.4.mp4.
+#
+# Captured with `xcrun simctl spawn <udid> log stream --predicate 'eventMessage CONTAINS "[mvcp]" OR eventMessage CONTAINS "[repro]"'`.
+# [mvcp] lines come from the patched RCTScrollViewComponentView.mm, [repro] lines from App.tsx (JS console).
+# iPhone 17 Pro simulator, iOS 26.5, React Native 0.88.0-rc.4, New Architecture, Hermes.
+
+14:51:54.791 [repro] contentSize h=3692.0 vl=[0,9]
+14:51:54.863 [repro] contentSize h=6488.0 vl=[0,17]
+14:52:09.149 [repro] run A: anchor stock · guard 0.87.1, header on
+14:52:09.165 [repro] contentSize h=3692.0 vl=[0,9]
+14:52:09.230 [repro] contentSize h=6488.0 vl=[0,17]
+14:52:11.666 [repro] landmark row 0 at screen y=417.7
+14:52:11.666 [repro] prepending 20 rows of 60pt at y=0.0 h=0.0
+14:52:11.687 [repro] contentSize h=10550.7 vl=[20,36]
+14:52:11.693 [repro] scroll y=4137.7 (dy=+4137.7) h=10550.7 (dh=+0.0) vl=[20,36]
+14:52:11.696 [repro] contentSize h=9501.7 vl=[20,36]
+14:52:11.712 [repro] contentSize h=8565.0 vl=[0,40]
+14:52:11.713 [repro] scroll y=2249.0 (dy=-1888.7) h=8565.0 (dh=-1985.7) vl=[0,40]
+14:52:11.755 [repro] contentSize h=8788.0 vl=[0,41]
+14:52:14.683 [repro] verdict: row 0 at screen y=-631.3, moved -1049.0
+14:52:16.571 [repro] run B remove anchor row + prepend 1: anchor stock · guard 0.87.1, removeClippedSubviews false
+14:52:17.388 [repro] scroll y=2000.0 (dy=+2000.0) h=20373.0 (dh=+0.0)
+14:52:18.183 [repro] landmark row 6 at screen y=404.7
+14:52:18.184 [repro] removing row 5, and prepending 1 row of 100pt
+14:52:20.199 [repro] verdict: row 6 at screen y=266.7, moved -138.0
+14:52:21.423 [repro] run B prepend 2400pt: anchor stock · guard 0.87.1, removeClippedSubviews false
+14:52:22.235 [repro] scroll y=2000.0 (dy=+2000.0) h=20373.0 (dh=+0.0)
+14:52:23.032 [repro] landmark row 6 at screen y=404.7
+14:52:23.033 [repro] prepending 12 rows of 200pt
+14:52:23.078 [repro] scroll y=4400.0 (dy=+2400.0) h=22773.0 (dh=+2400.0) correction #1
+14:52:25.049 [repro] verdict: row 6 at screen y=404.7, moved +0.0
+14:52:27.542 [repro] run B prepend 2400pt: anchor stock · guard 0.87.1, removeClippedSubviews true
+14:52:28.352 [repro] scroll y=2000.0 (dy=+2000.0) h=20373.0 (dh=+0.0)
+14:52:29.150 [repro] landmark row 6 at screen y=404.7
+14:52:29.150 [repro] prepending 12 rows of 200pt
+14:52:31.166 [repro] verdict: row 6 at screen y=2804.7, moved +2400.0
+14:52:32.396 [repro] run B prepend 2400pt: anchor stock · guard 0.87.1, removeClippedSubviews true
+14:52:33.205 [repro] scroll y=2000.0 (dy=+2000.0) h=20373.0 (dh=+0.0)
+14:52:34.000 [repro] landmark row 6 at screen y=404.7
+14:52:34.000 [repro] prepending 12 rows of 200pt
+14:52:36.016 [repro] verdict: row 6 at screen y=2804.7, moved +2400.0
+14:53:16.794 [repro] run B prepend 2400pt: anchor stock · guard 0.87.1, removeClippedSubviews true
+14:53:17.601 [repro] scroll y=2000.0 (dy=+2000.0) h=20373.0 (dh=+0.0)
+14:53:18.400 [repro] landmark row 6 at screen y=404.7
+14:53:18.400 [repro] prepending 12 rows of 200pt
+14:53:20.416 [repro] verdict: row 6 at screen y=2804.7, moved +2400.0
+14:53:22.900 [repro] run B prepend 2400pt: anchor stock · guard 0.87.1, removeClippedSubviews false
+14:53:23.718 [repro] scroll y=2000.0 (dy=+2000.0) h=20373.0 (dh=+0.0)
+14:53:24.517 [repro] landmark row 6 at screen y=404.7
+14:53:24.517 [repro] prepending 12 rows of 200pt
+14:53:24.556 [repro] scroll y=4400.0 (dy=+2400.0) h=22773.0 (dh=+2400.0) correction #1
+14:53:26.533 [repro] verdict: row 6 at screen y=404.7, moved +0.0

@@ -1,0 +1,97 @@
+# Screen B, Remove+prepend with removeClippedSubviews off: guard 0.87.1, main, then main with the proposed anchor fix. Same take as evidence/ios-unmounted-anchor-0.87.1.mp4.
+#
+# Captured with `xcrun simctl spawn <udid> log stream --predicate 'eventMessage CONTAINS "[mvcp]" OR eventMessage CONTAINS "[repro]"'`.
+# [mvcp] lines come from the patched RCTScrollViewComponentView.mm, [repro] lines from App.tsx (JS console).
+# iPhone 17 Pro simulator, iOS 26.5, React Native 0.87.1, New Architecture, Hermes.
+
+14:45:47.720 [mvcp] adjust guardMode=1 offset=4400.0 contentH=22773.0 anchor=alive tag=9714/9714 attached=YES prevY=4251.0 newY=4251.0
+14:46:23.780 [mvcp] prepare anchorMode=0 offset=4400.0 contentH=22773.0 anchor=subviews[17/72] tag=9714 y=4251.0 h=238.0 (straddles the top edge: bottom - offset = 89)
+14:46:23.780 [mvcp] adjust guardMode=1 offset=4400.0 contentH=22773.0 anchor=alive tag=9714/9714 attached=YES prevY=4251.0 newY=4251.0
+14:46:23.851 [mvcp] prepare anchorMode=0 offset=4400.0 contentH=22773.0 anchor=subviews[17/72] tag=9714 y=4251.0 h=238.0 (straddles the top edge: bottom - offset = 89)
+14:46:23.851 [mvcp] adjust guardMode=0 offset=4400.0 contentH=22773.0 anchor=alive tag=9714/9714 attached=YES prevY=4251.0 newY=4251.0
+14:46:23.916 [mvcp] prepare anchorMode=0 offset=4400.0 contentH=22773.0 anchor=subviews[17/72] tag=9714 y=4251.0 h=238.0 (straddles the top edge: bottom - offset = 89)
+14:46:23.916 [mvcp] adjust guardMode=0 offset=4400.0 contentH=22773.0 anchor=alive tag=9714/9714 attached=YES prevY=4251.0 newY=4251.0
+14:46:24.630 [mvcp] prepare anchorMode=0 offset=4400.0 contentH=22773.0 anchor=subviews[17/72] tag=9714 y=4251.0 h=238.0 (straddles the top edge: bottom - offset = 89)
+14:46:24.631 [mvcp] adjust guardMode=0 offset=4400.0 contentH=22773.0 anchor=alive tag=9714/9714 attached=YES prevY=4251.0 newY=4251.0
+14:46:24.678 [repro] run B remove anchor row + prepend 1: anchor stock · guard 0.87.1, removeClippedSubviews false
+14:46:24.711 [mvcp] prepare anchorMode=0 offset=4400.0 contentH=22773.0 anchor=subviews[17/72] tag=9714 y=4251.0 h=238.0 (straddles the top edge: bottom - offset = 89)
+14:46:24.718 [mvcp] adjust guardMode=0 offset=0.0 contentH=20373.0 anchor=nil tag=0/0 attached=NO prevY=0.0 newY=0.0
+14:46:24.766 [mvcp] prepare anchorMode=0 offset=0.0 contentH=20373.0 anchor=subviews[0/60] tag=10546 y=0.0 h=204.0
+14:46:24.766 [mvcp] adjust guardMode=0 offset=0.0 contentH=20373.0 anchor=alive tag=10546/10546 attached=YES prevY=0.0 newY=0.0
+14:46:25.483 [repro] scroll y=2000.0 (dy=+2000.0) h=20373.0 (dh=+0.0)
+14:46:25.483 [mvcp] prepare anchorMode=0 offset=2000.0 contentH=20373.0 anchor=subviews[5/60] tag=10606 y=1851.0 h=238.0 (straddles the top edge: bottom - offset = 89)
+14:46:25.483 [mvcp] adjust guardMode=0 offset=2000.0 contentH=20373.0 anchor=alive tag=10606/10606 attached=YES prevY=1851.0 newY=1851.0
+14:46:25.551 [mvcp] prepare anchorMode=0 offset=2000.0 contentH=20373.0 anchor=subviews[5/60] tag=10606 y=1851.0 h=238.0 (straddles the top edge: bottom - offset = 89)
+14:46:25.551 [mvcp] adjust guardMode=0 offset=2000.0 contentH=20373.0 anchor=alive tag=10606/10606 attached=YES prevY=1851.0 newY=1851.0
+14:46:26.283 [repro] landmark row 6 at screen y=385.3
+14:46:26.284 [repro] removing row 5, and prepending 1 row of 100pt
+14:46:26.304 [mvcp] prepare anchorMode=0 offset=2000.0 contentH=20373.0 anchor=subviews[5/60] tag=10606 y=1851.0 h=238.0 (straddles the top edge: bottom - offset = 89)
+14:46:26.307 [mvcp] adjust guardMode=0 offset=2000.0 contentH=20235.0 anchor=alive tag=11276/10606 attached=YES prevY=1851.0 newY=0.0
+14:46:26.307 [mvcp] adjust corrected deltaY=-1851.0 offset 2000.0 -> 149.0
+14:46:26.308 [mvcp] prepare anchorMode=0 offset=149.0 contentH=20235.0 anchor=subviews[1/60] tag=10546 y=100.0 h=204.0 (straddles the top edge: bottom - offset = 155)
+14:46:26.308 [repro] scroll y=149.0 (dy=-1851.0) h=20235.0 (dh=-138.0)
+14:46:26.308 [mvcp] adjust guardMode=0 offset=149.0 contentH=20235.0 anchor=alive tag=10546/10546 attached=YES prevY=100.0 newY=100.0
+14:46:26.333 [mvcp] prepare anchorMode=0 offset=149.0 contentH=20235.0 anchor=subviews[1/60] tag=10546 y=100.0 h=204.0 (straddles the top edge: bottom - offset = 155)
+14:46:26.333 [mvcp] adjust guardMode=0 offset=149.0 contentH=20235.0 anchor=alive tag=10546/10546 attached=YES prevY=100.0 newY=100.0
+14:46:28.298 [repro] verdict: row 6 at screen y=2098.3, moved +1713.0
+14:46:28.386 [mvcp] prepare anchorMode=0 offset=149.0 contentH=20235.0 anchor=subviews[1/60] tag=10546 y=100.0 h=204.0 (straddles the top edge: bottom - offset = 155)
+14:46:28.386 [mvcp] adjust guardMode=0 offset=149.0 contentH=20235.0 anchor=alive tag=10546/10546 attached=YES prevY=100.0 newY=100.0
+14:46:29.486 [mvcp] prepare anchorMode=0 offset=149.0 contentH=20235.0 anchor=subviews[1/60] tag=10546 y=100.0 h=204.0 (straddles the top edge: bottom - offset = 155)
+14:46:29.486 [mvcp] adjust guardMode=0 offset=149.0 contentH=20235.0 anchor=alive tag=10546/10546 attached=YES prevY=100.0 newY=100.0
+14:46:29.552 [mvcp] prepare anchorMode=0 offset=149.0 contentH=20235.0 anchor=subviews[1/60] tag=10546 y=100.0 h=204.0 (straddles the top edge: bottom - offset = 155)
+14:46:29.552 [mvcp] adjust guardMode=1 offset=149.0 contentH=20235.0 anchor=alive tag=10546/10546 attached=YES prevY=100.0 newY=100.0
+14:46:29.617 [mvcp] prepare anchorMode=0 offset=149.0 contentH=20235.0 anchor=subviews[1/60] tag=10546 y=100.0 h=204.0 (straddles the top edge: bottom - offset = 155)
+14:46:29.618 [mvcp] adjust guardMode=1 offset=149.0 contentH=20235.0 anchor=alive tag=10546/10546 attached=YES prevY=100.0 newY=100.0
+14:46:30.336 [mvcp] prepare anchorMode=0 offset=149.0 contentH=20235.0 anchor=subviews[1/60] tag=10546 y=100.0 h=204.0 (straddles the top edge: bottom - offset = 155)
+14:46:30.336 [mvcp] adjust guardMode=1 offset=149.0 contentH=20235.0 anchor=alive tag=10546/10546 attached=YES prevY=100.0 newY=100.0
+14:46:30.386 [repro] run B remove anchor row + prepend 1: anchor stock · guard main, removeClippedSubviews false
+14:46:30.414 [mvcp] prepare anchorMode=0 offset=149.0 contentH=20235.0 anchor=subviews[1/60] tag=10546 y=100.0 h=204.0 (straddles the top edge: bottom - offset = 155)
+14:46:30.421 [mvcp] adjust guardMode=1 offset=0.0 contentH=20373.0 anchor=nil tag=0/0 attached=NO prevY=0.0 newY=0.0
+14:46:30.421 [mvcp] adjust bail: no anchor (main)
+14:46:30.466 [mvcp] prepare anchorMode=0 offset=0.0 contentH=20373.0 anchor=subviews[0/60] tag=11302 y=0.0 h=204.0
+14:46:30.466 [mvcp] adjust guardMode=1 offset=0.0 contentH=20373.0 anchor=alive tag=11302/11302 attached=YES prevY=0.0 newY=0.0
+14:46:31.200 [repro] scroll y=2000.0 (dy=+2000.0) h=20373.0 (dh=+0.0)
+14:46:31.200 [mvcp] prepare anchorMode=0 offset=2000.0 contentH=20373.0 anchor=subviews[5/60] tag=11362 y=1851.0 h=238.0 (straddles the top edge: bottom - offset = 89)
+14:46:31.200 [mvcp] adjust guardMode=1 offset=2000.0 contentH=20373.0 anchor=alive tag=11362/11362 attached=YES prevY=1851.0 newY=1851.0
+14:46:31.218 [mvcp] prepare anchorMode=0 offset=2000.0 contentH=20373.0 anchor=subviews[5/60] tag=11362 y=1851.0 h=238.0 (straddles the top edge: bottom - offset = 89)
+14:46:31.218 [mvcp] adjust guardMode=1 offset=2000.0 contentH=20373.0 anchor=alive tag=11362/11362 attached=YES prevY=1851.0 newY=1851.0
+14:46:31.999 [repro] landmark row 6 at screen y=385.3
+14:46:31.999 [repro] removing row 5, and prepending 1 row of 100pt
+14:46:32.017 [mvcp] prepare anchorMode=0 offset=2000.0 contentH=20373.0 anchor=subviews[5/60] tag=11362 y=1851.0 h=238.0 (straddles the top edge: bottom - offset = 89)
+14:46:32.020 [mvcp] adjust guardMode=1 offset=2000.0 contentH=20235.0 anchor=alive tag=12032/11362 attached=YES prevY=1851.0 newY=0.0
+14:46:32.020 [mvcp] adjust bail: tag changed (main)
+14:46:34.015 [repro] verdict: row 6 at screen y=247.3, moved -138.0
+14:46:34.035 [mvcp] prepare anchorMode=0 offset=2000.0 contentH=20235.0 anchor=subviews[6/60] tag=11374 y=1951.0 h=216.0 (straddles the top edge: bottom - offset = 167)
+14:46:34.036 [mvcp] adjust guardMode=1 offset=2000.0 contentH=20235.0 anchor=alive tag=11374/11374 attached=YES prevY=1951.0 newY=1951.0
+14:46:35.191 [mvcp] prepare anchorMode=0 offset=2000.0 contentH=20235.0 anchor=subviews[6/60] tag=11374 y=1951.0 h=216.0 (straddles the top edge: bottom - offset = 167)
+14:46:35.192 [mvcp] adjust guardMode=1 offset=2000.0 contentH=20235.0 anchor=alive tag=11374/11374 attached=YES prevY=1951.0 newY=1951.0
+14:46:35.265 [mvcp] prepare anchorMode=2 offset=2000.0 contentH=20235.0 anchor=subviews[6/60] tag=11374 y=1951.0 h=216.0 (straddles the top edge: bottom - offset = 167) fallback=subviews[7] tag=11386 y=2167.0
+14:46:35.265 [mvcp] adjust guardMode=1 offset=2000.0 contentH=20235.0 anchor=alive tag=11374/11374 attached=YES prevY=1951.0 newY=1951.0
+14:46:35.333 [mvcp] prepare anchorMode=2 offset=2000.0 contentH=20235.0 anchor=subviews[6/60] tag=11374 y=1951.0 h=216.0 (straddles the top edge: bottom - offset = 167) fallback=subviews[7] tag=11386 y=2167.0
+14:46:35.333 [mvcp] adjust guardMode=1 offset=2000.0 contentH=20235.0 anchor=alive tag=11374/11374 attached=YES prevY=1951.0 newY=1951.0
+14:46:36.043 [mvcp] prepare anchorMode=2 offset=2000.0 contentH=20235.0 anchor=subviews[6/60] tag=11374 y=1951.0 h=216.0 (straddles the top edge: bottom - offset = 167) fallback=subviews[7] tag=11386 y=2167.0
+14:46:36.043 [mvcp] adjust guardMode=1 offset=2000.0 contentH=20235.0 anchor=alive tag=11374/11374 attached=YES prevY=1951.0 newY=1951.0
+14:46:36.093 [repro] run B remove anchor row + prepend 1: anchor fix · guard main, removeClippedSubviews false
+14:46:36.120 [mvcp] prepare anchorMode=2 offset=2000.0 contentH=20235.0 anchor=subviews[6/60] tag=11374 y=1951.0 h=216.0 (straddles the top edge: bottom - offset = 167) fallback=subviews[7] tag=11386 y=2167.0
+14:46:36.127 [mvcp] adjust guardMode=1 offset=0.0 contentH=20373.0 anchor=nil tag=0/0 attached=NO prevY=0.0 newY=0.0
+14:46:36.127 [mvcp] adjust bail: no anchor (main)
+14:46:36.182 [mvcp] prepare anchorMode=2 offset=0.0 contentH=20373.0 anchor=subviews[0/60] tag=12054 y=0.0 h=204.0
+14:46:36.183 [mvcp] adjust guardMode=1 offset=0.0 contentH=20373.0 anchor=alive tag=12054/12054 attached=YES prevY=0.0 newY=0.0
+14:46:36.903 [repro] scroll y=2000.0 (dy=+2000.0) h=20373.0 (dh=+0.0)
+14:46:36.903 [mvcp] prepare anchorMode=2 offset=2000.0 contentH=20373.0 anchor=subviews[5/60] tag=12114 y=1851.0 h=238.0 (straddles the top edge: bottom - offset = 89) fallback=subviews[6] tag=12126 y=2089.0
+14:46:36.903 [mvcp] adjust guardMode=1 offset=2000.0 contentH=20373.0 anchor=alive tag=12114/12114 attached=YES prevY=1851.0 newY=1851.0
+14:46:36.969 [mvcp] prepare anchorMode=2 offset=2000.0 contentH=20373.0 anchor=subviews[5/60] tag=12114 y=1851.0 h=238.0 (straddles the top edge: bottom - offset = 89) fallback=subviews[6] tag=12126 y=2089.0
+14:46:36.969 [mvcp] adjust guardMode=1 offset=2000.0 contentH=20373.0 anchor=alive tag=12114/12114 attached=YES prevY=1851.0 newY=1851.0
+14:46:37.699 [repro] landmark row 6 at screen y=385.3
+14:46:37.700 [repro] removing row 5, and prepending 1 row of 100pt
+14:46:37.716 [mvcp] prepare anchorMode=2 offset=2000.0 contentH=20373.0 anchor=subviews[5/60] tag=12114 y=1851.0 h=238.0 (straddles the top edge: bottom - offset = 89) fallback=subviews[6] tag=12126 y=2089.0
+14:46:37.720 [mvcp] adjust: straddling anchor tag=12784 changed size (h 238.0 -> 100.0), measuring fallback tag=12126 instead
+14:46:37.720 [mvcp] adjust guardMode=1 offset=2000.0 contentH=20235.0 anchor=alive tag=12126/12126 attached=YES prevY=2089.0 newY=1951.0
+14:46:37.720 [mvcp] adjust corrected deltaY=-138.0 offset 2000.0 -> 1862.0
+14:46:37.721 [mvcp] prepare anchorMode=2 offset=1862.0 contentH=20235.0 anchor=subviews[5/60] tag=12102 y=1843.0 h=108.0 (straddles the top edge: bottom - offset = 89) fallback=subviews[6] tag=12126 y=1951.0
+14:46:37.722 [repro] scroll y=1862.0 (dy=-138.0) h=20235.0 (dh=-138.0) correction #1
+14:46:37.722 [mvcp] adjust guardMode=1 offset=1862.0 contentH=20235.0 anchor=alive tag=12102/12102 attached=YES prevY=1843.0 newY=1843.0
+14:46:37.767 [mvcp] prepare anchorMode=2 offset=1862.0 contentH=20235.0 anchor=subviews[5/60] tag=12102 y=1843.0 h=108.0 (straddles the top edge: bottom - offset = 89) fallback=subviews[6] tag=12126 y=1951.0
+14:46:37.767 [mvcp] adjust guardMode=1 offset=1862.0 contentH=20235.0 anchor=alive tag=12102/12102 attached=YES prevY=1843.0 newY=1843.0
+14:46:39.715 [repro] verdict: row 6 at screen y=385.3, moved +0.0
+14:46:39.770 [mvcp] prepare anchorMode=2 offset=1862.0 contentH=20235.0 anchor=subviews[5/60] tag=12102 y=1843.0 h=108.0 (straddles the top edge: bottom - offset = 89) fallback=subviews[6] tag=12126 y=1951.0
